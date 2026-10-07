@@ -12,6 +12,10 @@ import com.example.cafeandino.viewmodel.CartViewModel
 import com.example.cafeandino.viewmodel.CheckoutViewModel
 import com.example.cafeandino.viewmodel.HomeViewModel
 
+
+/*
+ stage-0: base completa
+*/
 class MainActivity : ComponentActivity() {
 
     private val homeViewModel: HomeViewModel by viewModels()

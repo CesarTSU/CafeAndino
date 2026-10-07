@@ -1,8 +1,10 @@
+// Routes.kt
 package com.example.cafeandino.ui.navigation
 
 object Routes {
     const val HOME = "home"
     const val PRODUCT_DETAIL = "productDetail/{productId}"
+    const val CART = "cart"
     const val CHECKOUT = "checkout"
     const val CONFIRMATION = "confirmation/{customerName}"
 

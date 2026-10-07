@@ -1,5 +1,8 @@
 package com.example.cafeandino.ui.navigation
 
+// AppNavHost.kt
+
+
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -9,6 +12,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.cafeandino.ui.CartScreen
 import com.example.cafeandino.ui.CheckoutScreen
 import com.example.cafeandino.ui.ConfirmationScreen
 import com.example.cafeandino.ui.HomeScreen
@@ -28,6 +32,7 @@ fun AppNavHost(
         navController = navController,
         startDestination = Routes.HOME
     ) {
+        // NODO 1: menú
         composable(Routes.HOME) {
             HomeScreen(
                 homeViewModel = homeViewModel,
@@ -35,10 +40,14 @@ fun AppNavHost(
                 onProductClick = { productId ->
                     navController.navigate(Routes.productDetail(productId))
                 },
+                //Primer error que encuentro habia que cambiar carrito por routes.cart para que no se crashee
+                onCartClick = { navController.navigate(Routes.CART) }
+                ,
                 onCheckoutClick = { navController.navigate(Routes.CHECKOUT) }
             )
         }
 
+        // NODO 2: detalle de producto
         composable(
             route = Routes.PRODUCT_DETAIL,
             arguments = listOf(navArgument("productId") { type = NavType.IntType })
@@ -46,15 +55,30 @@ fun AppNavHost(
             val productId = backStackEntry.arguments?.getInt("productId") ?: 0
             val menuItems by homeViewModel.menuItems.collectAsState()
             val orderCount by cartViewModel.orderCount.collectAsState()
+            val product = menuItems.firstOrNull { it.id == productId }
 
             ProductDetailScreen(
-                product = menuItems.firstOrNull { it.id == productId },
+                product = product,
                 orderCount = orderCount,
-                onAdd = { cartViewModel.addOrder() },
+                onAdd = {
+                    if (product != null) {
+                        cartViewModel.addItem(product)
+                    }
+                },
                 onBack = { navController.popBackStack() }
             )
         }
 
+        // NODO 3: carrito
+        composable(Routes.CART) {
+            CartScreen(
+                cartViewModel = cartViewModel,
+                onCheckoutClick = { navController.navigate(Routes.CHECKOUT) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // NODO 4: formulario de pedido
         composable(Routes.CHECKOUT) {
             val orderCount by cartViewModel.orderCount.collectAsState()
 
@@ -74,6 +98,7 @@ fun AppNavHost(
             )
         }
 
+        // NODO 5: confirmación, que recibe el nombre por la ruta
         composable(
             route = Routes.CONFIRMATION,
             arguments = listOf(navArgument("customerName") { type = NavType.StringType })

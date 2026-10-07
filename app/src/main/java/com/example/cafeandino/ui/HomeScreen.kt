@@ -1,3 +1,4 @@
+// HomeScreen.kt
 package com.example.cafeandino.ui
 
 import androidx.compose.foundation.Image
@@ -18,7 +19,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.cafeandino.R
 import com.example.cafeandino.model.MenuItem
-import com.example.cafeandino.ui.theme.CafeAndinoTheme
 import com.example.cafeandino.viewmodel.CartViewModel
 import com.example.cafeandino.viewmodel.HomeViewModel
 
@@ -27,6 +27,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     cartViewModel: CartViewModel,
     onProductClick: (Int) -> Unit,
+    onCartClick: () -> Unit,
     onCheckoutClick: () -> Unit
 ) {
     val menuItems by homeViewModel.menuItems.collectAsState()
@@ -37,8 +38,9 @@ fun HomeScreen(
         menuItems = menuItems,
         orderCount = orderCount,
         lastCustomerName = lastCustomerName,
-        onAdd = { cartViewModel.addOrder() },
+        onAdd = { menuItem -> cartViewModel.addItem(menuItem) },
         onProductClick = onProductClick,
+        onCartClick = onCartClick,
         onCheckoutClick = onCheckoutClick
     )
 }
@@ -49,12 +51,13 @@ fun HomeScreenContent(
     menuItems: List<MenuItem>,
     orderCount: Int,
     lastCustomerName: String?,
-    onAdd: () -> Unit,
+    onAdd: (MenuItem) -> Unit,
     onProductClick: (Int) -> Unit,
+    onCartClick: () -> Unit,
     onCheckoutClick: () -> Unit
 ) {
     Scaffold(
-        topBar = { CenterAlignedTopAppBar(title = { Text("Café Andino") }) }
+        topBar = { TopAppBar(title = { Text("Café Andino") }) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -75,19 +78,30 @@ fun HomeScreenContent(
                 )
             }
 
-            Button(
-                onClick = onCheckoutClick,
-                enabled = orderCount > 0,
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Confirmar pedido")
+                OutlinedButton(
+                    onClick = onCartClick,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Ver carrito")
+                }
+                Button(
+                    onClick = onCheckoutClick,
+                    enabled = orderCount > 0,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Confirmar pedido")
+                }
             }
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(menuItems) { item ->
                     MenuItemCard(
                         item = item,
-                        onAdd = onAdd,
+                        onAdd = { onAdd(item) },
                         onClick = { onProductClick(item.id) }
                     )
                 }
@@ -133,17 +147,16 @@ fun MenuItemCard(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    CafeAndinoTheme {
-        HomeScreenContent(
-            menuItems = listOf(
-                MenuItem(1, "Café Americano", "Café negro suave, 250ml", 1800, R.drawable.logo),
-                MenuItem(2, "Cappuccino", "Espresso con leche vaporizada", 2200, R.drawable.logo)
-            ),
-            orderCount = 2,
-            lastCustomerName = null,
-            onAdd = {},
-            onProductClick = {},
-            onCheckoutClick = {}
-        )
-    }
+    HomeScreenContent(
+        menuItems = listOf(
+            MenuItem(1, "Café Americano", "Café negro suave, 250ml", 1800, R.drawable.logo),
+            MenuItem(2, "Cappuccino", "Espresso con leche vaporizada", 2200, R.drawable.logo)
+        ),
+        orderCount = 2,
+        lastCustomerName = null,
+        onAdd = {},
+        onProductClick = {},
+        onCartClick = {},
+        onCheckoutClick = {}
+    )
 }

@@ -1,24 +1,64 @@
 package com.example.cafeandino.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.cafeandino.model.CartItem
+import com.example.cafeandino.model.MenuItem
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 class CartViewModel : ViewModel() {
 
-    private val _orderCount = MutableStateFlow(0)
-    val orderCount: StateFlow<Int> = _orderCount.asStateFlow()
+    private val _cartItems = MutableStateFlow(mutableListOf<CartItem>())
+    val cartItems: StateFlow<List<CartItem>> = _cartItems.asStateFlow()
+
+    // Datos derivados: se recalculan solos cada vez que cambia el carrito
+    val orderCount: StateFlow<Int> = _cartItems
+        .map { items -> items.sumOf { it.quantity } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
+    val totalAmount: StateFlow<Int> = _cartItems
+        .map { items -> items.sumOf { it.subtotal } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     private val _lastCustomerName = MutableStateFlow<String?>(null)
     val lastCustomerName: StateFlow<String?> = _lastCustomerName.asStateFlow()
 
-    fun addOrder() {
-        _orderCount.value += 1
+    fun addItem(menuItem: MenuItem) {
+        val existing = _cartItems.value.firstOrNull { it.item.id == menuItem.id }
+        if (existing == null) {
+            _cartItems.value.add(CartItem(menuItem, 1))
+        } else {
+            increaseQuantity(menuItem.id)
+        }
     }
 
+    fun increaseQuantity(itemId: Int) {
+        _cartItems.value = _cartItems.value
+            .map { if (it.item.id == itemId) it.copy(quantity = it.quantity + 1) else it }
+            .toMutableList()
+    }
+
+    fun decreaseQuantity(itemId: Int) {
+        _cartItems.value = _cartItems.value
+            .map { if (it.item.id == itemId) it.copy(quantity = it.quantity - 1) else it }
+            .toMutableList()
+    }
+
+    fun removeItem(itemId: Int) {
+        _cartItems.value = _cartItems.value.filter { it.item.id != itemId }.toMutableList()
+    }
+
+    fun clearCart() {
+        _cartItems.value = mutableListOf()
+    }
+
+    /** Se llama cuando el formulario se confirmó correctamente. */
     fun confirmOrder(customerName: String) {
         _lastCustomerName.value = customerName
-        _orderCount.value = 0
     }
 }

@@ -67,7 +67,11 @@ class CartViewModel : ViewModel() {
     }
 
     /** Se llama cuando el formulario se confirmó correctamente. */
+
+    //Faltaba que cuando se confirmara la funcion de orden se limpiara el carrito con el clearcart
     fun confirmOrder(customerName: String) {
         _lastCustomerName.value = customerName
+        clearCart()
     }
+
 }

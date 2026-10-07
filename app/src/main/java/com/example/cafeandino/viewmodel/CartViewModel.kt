@@ -45,11 +45,18 @@ class CartViewModel : ViewModel() {
             .toMutableList()
     }
 
+    // Se arregla error de la funcion de descrecimiento que cuando uno le daba al - en el carrito este restaba y pasaba a negativo
     fun decreaseQuantity(itemId: Int) {
-        _cartItems.value = _cartItems.value
-            .map { if (it.item.id == itemId) it.copy(quantity = it.quantity - 1) else it }
-            .toMutableList()
+        val item = _cartItems.value.firstOrNull { it.item.id == itemId } ?: return
+        if (item.quantity <= 1) {
+            removeItem(itemId)
+        } else {
+            _cartItems.value = _cartItems.value
+                .map { if (it.item.id == itemId) it.copy(quantity = it.quantity - 1) else it }
+                .toMutableList()
+        }
     }
+
 
     fun removeItem(itemId: Int) {
         _cartItems.value = _cartItems.value.filter { it.item.id != itemId }.toMutableList()

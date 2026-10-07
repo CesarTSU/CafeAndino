@@ -30,9 +30,11 @@ class CartViewModel : ViewModel() {
 
     fun addItem(menuItem: MenuItem) {
         val existing = _cartItems.value.firstOrNull { it.item.id == menuItem.id }
+        // Segundo error cuando se agregaba algo al carrito no se sumaba como 1 si no pasaba a 2 directo arreglado
         if (existing == null) {
-            _cartItems.value.add(CartItem(menuItem, 1))
-        } else {
+            _cartItems.value = (_cartItems.value + CartItem(menuItem, 1)).toMutableList()
+        }
+        else {
             increaseQuantity(menuItem.id)
         }
     }

@@ -11,6 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +59,10 @@ fun CartScreenContent(
     onBack: () -> Unit
 ) {
     // Estado propio de esta pantalla: ¿está abierto el diálogo de confirmación?
-    var showClearDialog by remember { mutableStateOf(false) }
+
+    // se usa remember saveable para quie así la pantalla al girarse no cierre la ventana emergente del vaciar carrito
+    var showClearDialog by rememberSaveable { mutableStateOf(false) }
+
 
     Scaffold(
         topBar = {

@@ -5,5 +5,6 @@ data class CartItem(
     val quantity: Int
 ) {
     val subtotal: Int
-        get() = item.price + quantity
+        //Error sencillo habia una suma donde debia tener una multiplicacion
+        get() = item.price * quantity
 }
